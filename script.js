@@ -6,6 +6,8 @@ Promise.all([
   faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
 ]).then(start)
 
+const labels = ['Khaled Mohamed','Khaled Elmasry']
+
 async function start() {
   const container = document.createElement('div')
   container.style.position = 'relative'
@@ -28,25 +30,35 @@ async function start() {
     const resizedDetections = faceapi.resizeResults(detections, displaySize)
     const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor))
     results.forEach((result, i) => {
+
       const box = resizedDetections[i].detection.box
-      const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() })
+
+      const drawBox = new faceapi.draw.DrawBox(box,{ label: result.toString() } )
       drawBox.draw(canvas)
+
     })
+
   })
+
 }
 
+
 function loadLabeledImages() {
-  const labels = ['Black Widow', 'Captain America', 'Captain Marvel', 'Hawkeye', 'Jim Rhodes', 'Thor', 'Tony Stark','Khaled Mohamed']
+  
+  
   return Promise.all(
     labels.map(async label => {
       const descriptions = []
       for (let i = 1; i <= 2; i++) {
-        const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/WebDevSimplified/Face-Recognition-JavaScript/master/labeled_images/${label}/${i}.jpg`)
+        const img = await faceapi.fetchImage(`/labeled_images/${label}/${i}.jpg`)
         const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
         descriptions.push(detections.descriptor)
       }
 
-      return new faceapi.LabeledFaceDescriptor(label, descriptions)
+      
+
+      return new faceapi.LabeledFaceDescriptors( label, descriptions)
+     
     })
   )
 }
